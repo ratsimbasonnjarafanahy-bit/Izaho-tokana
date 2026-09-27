@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Izaho Tokana — Questionnaires</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --text:#1c2330; --muted:#5b6472; --border:#e1e4ea;
+  --accent:#2f5fa8; --accent-dark:#1f4478; --accent-bg:#eaf0fb; --danger:#b3413a;
+  --radius:10px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181f; --card:#1d2430; --text:#e7ebf2; --muted:#9aa4b2; --border:#2c3542;
+    --accent:#6f9eee; --accent-dark:#8fb2f2; --accent-bg:#20304a; --danger:#e08079;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181f; --card:#1d2430; --text:#e7ebf2; --muted:#9aa4b2; --border:#2c3542;
+  --accent:#6f9eee; --accent-dark:#8fb2f2; --accent-bg:#20304a; --danger:#e08079;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;line-height:1.45;}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 80px;}
+header.top{padding:18px 16px 8px;text-align:center;}
+header.top h1{font-size:1.25rem;margin:0 0 4px;}
+header.top p{color:var(--muted);margin:0;font-size:.9rem;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;}
+.choice-card{cursor:pointer;transition:border-color .15s;}
+.choice-card:hover{border-color:var(--accent);}
+.choice-card h2{margin:0 0 6px;font-size:1.05rem;color:var(--accent-dark);}
+.choice-card p{margin:0;color:var(--muted);font-size:.88rem;}
+.section-title{font-weight:bold;color:var(--accent-dark);font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;margin:22px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--accent-bg);}
+.q{margin-bottom:16px;}
+.q label.qlabel{display:block;font-size:.95rem;margin-bottom:8px;}
+.opt-list{display:flex;flex-direction:column;gap:6px;}
+.opt{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;cursor:pointer;}
+.opt:hover{background:var(--accent-bg);}
+.opt input{accent-color:var(--accent);flex:none;}
+.likert-row{display:flex;justify-content:space-between;gap:6px;overflow-x:auto;padding:4px 0;}
+.likert-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px;}
+.likert-item input{accent-color:var(--accent);}
+.likert-item span{font-size:.68rem;color:var(--muted);text-align:center;}
+.likert-caption{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:2px;}
+.hidden{display:none !important;}
+button{font-family:inherit;font-size:.95rem;border:none;border-radius:8px;cursor:pointer;}
+.btn-primary{background:var(--accent);color:#fff;padding:12px 20px;width:100%;}
+.btn-primary:hover{background:var(--accent-dark);}
+.btn-secondary{background:transparent;color:var(--accent);border:1px solid var(--accent);padding:9px 16px;}
+.progress{position:sticky;top:0;background:var(--bg);padding:8px 0 4px;z-index:5;}
+.progress-bar{height:6px;background:var(--border);border-radius:4px;overflow:hidden;}
+.progress-bar > div{height:100%;background:var(--accent);width:0%;transition:width .2s;}
+.progress-label{font-size:.72rem;color:var(--muted);margin-top:4px;text-align:right;}
+.thanks{text-align:center;padding:40px 16px;}
+.thanks h2{color:var(--accent-dark);}
+.note{font-size:.78rem;color:var(--muted);margin-top:10px;}
+.top-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.required{color:var(--danger);}
+
+.q-error{outline:2px solid var(--danger);border-radius:8px;padding:8px;}
+.q-error .qlabel{color:var(--danger);}
+.q-error-msg{color:var(--danger);font-size:.78rem;margin-top:4px;}
+.refusal{text-align:center;padding:40px 16px;}
+.refusal h2{color:var(--accent-dark);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Izaho Tokana — Enrôlement biométrique à Madagascar</h1>
+    <p>Reconstitution interactive des questionnaires officiels (population / opérateurs et acteurs)</p>
+  </header>
+
+  <div id="syncBanner" class="note hidden" style="text-align:center;margin-bottom:10px;"></div>
+  <div id="landing">
+    <div class="card choice-card" data-target="population">
+      <h2>Questionnaire — Population</h2>
+      <p>Personnes enrôlées — 46 questions, 10 sections</p>
+    </div>
+    <div class="card choice-card" data-target="operateurs">
+      <h2>Questionnaire — Opérateurs et acteurs</h2>
+      <p>Agents, superviseurs, responsables du projet — 70 questions, 11 sections</p>
+    </div>
+    <p class="note">Vos réponses sont transmises directement et de façon sécurisée au chercheur. Aucun autre participant ne peut consulter vos réponses ni celles des autres.</p>
+  </div>
+
+  <div id="formArea" class="hidden">
+    <div class="progress">
+      <div class="progress-bar"><div id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel"></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn-secondary" id="backBtn">← Changer de questionnaire</button>
+    </div>
+    <form id="surveyForm"></form>
+    <button class="btn-primary" id="submitBtn">Envoyer mes réponses</button>
+  </div>
+
+  <div id="thanks" class="thanks hidden">
+    <h2>Merci pour votre participation</h2>
+    <p id="thanksMsg"></p>
+    <button class="btn-secondary" id="restartBtn" style="margin-top:10px;">Répondre à un autre questionnaire</button>
+  </div>
+
+  <div id="refusal" class="refusal hidden">
+    <h2>Questionnaire terminé</h2>
+    <p>Votre choix a bien été pris en compte. Comme vous ne souhaitez pas participer à cette enquête, le questionnaire est terminé. Merci pour votre attention.</p>
+    <button class="btn-secondary" id="refusalRestartBtn" style="margin-top:10px;">Revenir à l'accueil</button>
+  </div>
+</div>
+
+
+<script>
+const DATA = {"population": [{"title": "SECTION 0 : CONSENTEMENT", "questions": [{"code": "Q1", "id": "Q1_CONSENTEMENT", "label": "Q1. Acceptez-vous de participer volontairement à cette enquête ?", "type": "Choix multiple", "kind": "single", "options": ["Oui, j'accepte de participer", "Non, je refuse"]}]}, {"title": "SECTION 1 : CARACTÉRISTIQUES", "questions": [{"code": "Q2", "id": "AGE", "label": "Q2. Quel est votre âge ?", "type": "Choix multiple", "kind": "single", "options": ["18-24 ans", "25-34 ans", "35-44 ans", "45-54 ans", "55-64 ans", "65 ans et plus"]}, {"code": "Q3", "id": "SEXE", "label": "Q3. Quel est votre sexe ?", "type": "Choix multiple", "kind": "single", "options": ["Homme", "Femme", "Préfère ne pas répondre"]}, {"code": "Q4", "id": "FOKONTANY", "label": "Q4. Dans quel fokontany résidez-vous principalement ?", "type": "Choix multiple", "kind": "single", "options": ["Alakamisy", "Ambohitromby", "Andohafarihy", "Mahandraza", "Marofangady", "Soamahatamana", "Tsaratanana", "Autre"]}, {"code": "Q5", "id": "SITUATION_MATRIMONIALE", "label": "Q5. Quelle est votre situation matrimoniale ?", "type": "Choix multiple", "kind": "single", "options": ["Célibataire", "Marié(e) / En union", "Divorcé(e) / Séparé(e)", "Veuf / Veuve", "Préfère ne pas répondre"]}, {"code": "Q6", "id": "INSTRUCTION", "label": "Q6. Quel est le niveau d'instruction le plus élevé que vous avez atteint ?", "type": "Choix multiple", "kind": "single", "options": ["Aucun niveau d'instruction", "Primaire", "Collège", "Lycée", "Formation professionnelle", "Universitaire", "Préfère ne pas répondre"]}, {"code": "Q7", "id": "ACTIVITE", "label": "Q7. Quelle est votre activité principale actuelle ?", "type": "Choix multiple", "kind": "single", "options": ["Agriculteur / Agricultrice", "Éleveur / Éleveuse", "Commerçant(e)", "Artisan(e)", "Fonctionnaire", "Salarié(e) du secteur privé", "Travailleur / Travailleuse indépendant(e)", "Étudiant(e)", "Sans emploi", "Travail domestique", "Retraité(e)", "Autre"]}]}, {"title": "SECTION 2 : RAPPORT À L'ADMINISTRATION", "questions": [{"code": "Q8", "id": "Q8", "label": "Q8. Dans votre communauté, disposer de documents officiels est considéré comme important.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q9", "id": "Q9", "label": "Q9. Les membres de la famille encouragent généralement les personnes à garder leurs documents officiels à jour.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q10", "id": "Q10", "label": "Q10. L'avis de la famille ou de l'entourage peut influencer la décision de participer à une démarche administrative.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q11", "id": "Q11", "label": "Q11. Certaines personnes de votre communauté hésitent à se rendre dans les bureaux ou services administratifs.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q12", "id": "Q12", "label": "Q12. La peur de ne pas bien comprendre les procédures peut décourager certaines personnes de faire des démarches administratives.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q13", "id": "Q13", "label": "Q13. Les informations données par les autorités locales peuvent influencer la décision de participer à une démarche administrative.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q14", "id": "Q14", "label": "Q14. Les rumeurs ou informations non vérifiées peuvent influencer la décision de participer à une opération administrative.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION 3 : CONNAISSANCE ET INFORMATION", "questions": [{"code": "Q15", "id": "Q15", "label": "Q15. Avant aujourd'hui, aviez-vous déjà entendu parler du dispositif « Izaho Tokana » ?", "type": "Choix multiple", "kind": "single", "options": ["Oui", "Non", "Ne sait pas"]}, {"code": "Q16", "id": "Q16", "label": "Q16. Si oui, comment en avez-vous entendu parler ?", "type": "Cases à cocher", "kind": "multi", "options": ["Fokontany", "Commune", "Famille", "Amis / entourage", "Agents du projet", "Réunion ou campagne de sensibilisation", "Radio / télévision", "Réseaux sociaux", "Autre"], "dependsOn": "Q15", "showIf": ["Oui"]}, {"code": "Q17", "id": "Q17", "label": "Q17. Avant de participer à l'enrôlement, les explications sur la procédure étaient-elles claires ?", "type": "Choix multiple", "kind": "single", "options": ["Pas du tout", "Peu", "Moyennement", "Beaucoup", "Tout à fait"]}, {"code": "Q18", "id": "Q18", "label": "Q18. Avant l'enrôlement, saviez-vous à quoi serviraient les informations recueillies ?", "type": "Choix multiple", "kind": "single", "options": ["Oui, clairement", "Oui, mais partiellement", "Non", "Ne sait pas"]}]}, {"title": "SECTION 4 : MOTIVATIONS ET INFLUENCE", "questions": [{"code": "Q19", "id": "Q19", "label": "Q19. Quelle est la principale raison de votre participation ?", "type": "Choix multiple", "kind": "single", "options": ["Régulariser une situation d'identité", "Être officiellement identifié(e)", "Faciliter de futures démarches", "Accéder à certains services", "Éviter des problèmes liés à l'identité", "Recommandation des autorités", "Recommandation de la famille", "Curiosité", "Autre"]}, {"code": "Q20", "id": "Q20", "label": "Q20. D'autres personnes ont-elles influencé votre décision ?", "type": "Choix multiple", "kind": "single", "options": ["Oui", "Non", "Ne sait pas"]}, {"code": "Q21", "id": "Q21", "label": "Q21. Si oui, qui principalement ?", "type": "Choix multiple", "kind": "single", "options": ["Famille", "Ami / entourage", "Responsable fokontany", "Autorité communale", "Agent du projet", "Responsable communautaire", "Autre"], "dependsOn": "Q20", "showIf": ["Oui"]}]}, {"title": "SECTION 5 : EXPÉRIENCE", "questions": [{"code": "Q22", "id": "Q22", "label": "Q22. Aviez-vous déjà participé auparavant à une opération d'enrôlement biométrique ?", "type": "Choix multiple", "kind": "single", "options": ["Oui", "Non", "Ne sait pas"]}, {"code": "Q23", "id": "Q23", "label": "Q23. Comment évaluez-vous globalement votre expérience ?", "type": "Choix multiple", "kind": "single", "options": ["Très mauvaise", "Mauvaise", "Moyenne", "Bonne", "Très bonne"]}, {"code": "Q24", "id": "Q24", "label": "Q24. Les explications données par les agents étaient faciles à comprendre.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q25", "id": "Q25", "label": "Q25. Avez-vous rencontré des difficultés ?", "type": "Choix multiple", "kind": "single", "options": ["Oui", "Non"]}, {"code": "Q26", "id": "Q26", "label": "Q26. Si oui, lesquelles ?", "type": "Cases à cocher", "kind": "multi", "options": ["Longue attente", "Difficulté de déplacement", "Mauvais état des routes", "Distance importante", "Difficulté liée aux documents", "Manque d'information", "Difficulté à comprendre la procédure", "Retard ou interruption", "Problème technique", "Autre"], "dependsOn": "Q25", "showIf": ["Oui"]}]}, {"title": "SECTION 6 : ACCESSIBILITÉ ET COÛTS", "questions": [{"code": "Q27", "id": "Q27", "label": "Q27. Temps total consacré (déplacement + attente + enrôlement)", "type": "Choix multiple", "kind": "single", "options": ["Moins d'une heure", "Entre 1 et 2 heures", "Entre 2 et 4 heures", "Plus de 4 heures", "Une journée entière", "Plus d'une journée"]}, {"code": "Q28", "id": "Q28", "label": "Q28. Avez-vous engagé des dépenses ou subi une perte financière ?", "type": "Choix multiple", "kind": "single", "options": ["Oui", "Non", "Ne sait pas"]}, {"code": "Q29", "id": "Q29", "label": "Q29. Si oui, quels coûts ou pertes ?", "type": "Cases à cocher", "kind": "multi", "options": ["Transport", "Nourriture / repas", "Hébergement", "Perte de travail ou de revenu", "Dépenses liées aux documents", "Autre"], "dependsOn": "Q28", "showIf": ["Oui"]}, {"code": "Q30", "id": "Q30", "label": "Q30. La distance jusqu'au lieu d'enrôlement a rendu votre participation difficile.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q31", "id": "Q31", "label": "Q31. Le temps consacré à l'enrôlement a perturbé vos activités habituelles ou votre travail.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q32", "id": "Q32", "label": "Q32. Les coûts liés au déplacement ou à la participation ont constitué une difficulté.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION 7 : CONFIANCE ET PROTECTION", "questions": [{"code": "Q33", "id": "Q33", "label": "Q33. Les agents chargés de l'enrôlement inspirent confiance.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q34", "id": "Q34", "label": "Q34. Les informations recueillies lors de l'enrôlement seront correctement protégées.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q35", "id": "Q35", "label": "Q35. Certaines personnes peuvent craindre que leurs informations personnelles soient utilisées sans leur autorisation.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q36", "id": "Q36", "label": "Q36. Les explications sur l'utilisation et la protection des informations personnelles renforcent la confiance.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION 8 : UTILITÉ ET ACCEPTATION", "questions": [{"code": "Q37", "id": "Q37", "label": "Q37. L'enrôlement biométrique peut faciliter certaines démarches administratives.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q38", "id": "Q38", "label": "Q38. Identifier correctement chaque personne peut aider à éviter qu'une même personne soit enregistrée plusieurs fois.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q39", "id": "Q39", "label": "Q39. Une meilleure identification des personnes peut faciliter l'accès à certains services publics.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q40", "id": "Q40", "label": "Q40. L'enrôlement biométrique peut contribuer à améliorer l'organisation de certains services publics.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q41", "id": "Q41", "label": "Q41. Après cette expérience, seriez-vous disposé(e) à utiliser d'autres services publics utilisant des outils numériques ?", "type": "Choix multiple", "kind": "single", "options": ["Pas du tout disposé(e)", "Peu disposé(e)", "Moyennement disposé(e)", "Disposé(e)", "Tout à fait disposé(e)"]}]}, {"title": "SECTION 9 : ÉVALUATION GLOBALE", "questions": [{"code": "Q42", "id": "Q42", "label": "Q42. Selon vous, l'enrôlement biométrique peut être utile pour Madagascar.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q43", "id": "Q43", "label": "Q43. Un meilleur système d'identification peut contribuer à améliorer certains services publics.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "Q44", "id": "Q44", "label": "Q44. Êtes-vous favorable à la poursuite de la modernisation et de la digitalisation des services publics ?", "type": "Choix multiple", "kind": "single", "options": ["Oui", "Non", "Sans opinion"]}, {"code": "Q45", "id": "Q45", "label": "Q45. Quelle est la principale amélioration que le dispositif devrait apporter à la population ?", "type": "Choix multiple", "kind": "single", "options": ["Réduire le temps d'attente", "Faciliter l'accès aux lieux d'enrôlement", "Améliorer l'information et la sensibilisation", "Renforcer l'accompagnement des agents", "Améliorer les équipements et la connexion", "Renforcer la protection des données", "Améliorer le suivi administratif", "Autre"]}, {"code": "Q46", "id": "Q46", "label": "Q46. Avez-vous d'autres remarques ou recommandations ?", "type": "Choix multiple", "kind": "single", "options": ["Aucune remarque supplémentaire", "Améliorer l'information de la population", "Améliorer l'accessibilité des sites", "Renforcer les moyens techniques", "Renforcer la protection des données", "Renforcer la formation des agents", "Améliorer le suivi administratif", "Autre"]}]}], "operateurs": [{"title": "SECTION 0 : CONSENTEMENT", "questions": [{"code": "CONSENT", "id": "CONSENT_ACTEURS", "label": "Acceptez-vous de participer volontairement à cette enquête ?", "type": "Choix multiple", "kind": "single", "options": ["Oui, j'accepte de participer", "Non, je refuse"]}]}, {"title": "SECTION A : PROFIL PROFESSIONNEL", "questions": [{"code": "A1", "id": "A1_FONCTION", "label": "A1. Fonction principale", "type": "Choix multiple", "kind": "single", "options": ["Opérateur de kit", "Superviseur d'enrôlement", "Responsable d'enrôlement", "Agent communal", "Agent administratif", "Agent technique / informatique", "Responsable du projet", "Autre"]}, {"code": "A2", "id": "A2_INSTITUTION", "label": "A2. Institution ou structure d'appartenance", "type": "Choix multiple", "kind": "single", "options": ["Administration publique", "Commune", "Projet / programme", "Structure technique", "Autre"]}, {"code": "A3", "id": "A3_ANCIENNETE_FONCTION", "label": "A3. Depuis combien de temps occupez-vous votre fonction actuelle ?", "type": "Choix multiple", "kind": "single", "options": ["Moins de 6 mois", "6 mois à moins d'un an", "1 à 3 ans", "Plus de 3 ans"]}, {"code": "A4", "id": "A4_ANCIENNETE_PROJET", "label": "A4. Depuis combien de temps êtes-vous impliqué(e) dans « Izaho Tokana » ?", "type": "Choix multiple", "kind": "single", "options": ["Moins de 3 mois", "3 à 6 mois", "6 mois à 1 an", "Plus d'un an"]}, {"code": "A5", "id": "A5_FORMATION_RECUE", "label": "A5. Avez-vous reçu une formation spécifique pour cette opération ?", "type": "Choix multiple", "kind": "single", "options": ["Oui", "Non", "Non concerné"]}, {"code": "A6", "id": "A6_DUREE_FORMATION", "label": "A6. Si oui, quelle était approximativement la durée de cette formation ?", "type": "Choix multiple", "kind": "single", "options": ["Moins d'une journée", "1 à 2 jours", "3 à 5 jours", "Plus de 5 jours", "Non concerné"]}, {"code": "A7", "id": "A7_EXPERIENCE_ANTERIEURE", "label": "A7. Aviez-vous déjà participé à une opération d'enrôlement similaire auparavant ?", "type": "Choix multiple", "kind": "single", "options": ["Oui", "Non"]}]}, {"title": "SECTION B : ORGANISATION ET PROCESSUS", "questions": [{"code": "B8", "id": "B8", "label": "B8. Les procédures d'enrôlement sont clairement définies.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "B9", "id": "B9", "label": "B9. Les agents disposent des informations nécessaires pour effectuer correctement leur travail.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "B10", "id": "B10", "label": "B10. Les équipements sont adaptés aux conditions rencontrées sur le terrain.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "B11", "id": "B11", "label": "B11. Les procédures permettent de limiter les erreurs lors de la collecte des informations.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "B12", "id": "B12", "label": "B12. Le système permet de détecter ou de prévenir les enregistrements multiples.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "B13", "id": "B13", "label": "B13. Les problèmes techniques sont pris en charge dans des délais satisfaisants.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION C : QUALITÉ ET FIABILITÉ DES DONNÉES", "questions": [{"code": "C14", "id": "C14", "label": "C14. Les procédures permettent de vérifier l'exactitude des informations collectées.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "C15", "id": "C15", "label": "C15. Les informations nécessaires sont généralement collectées de manière complète.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "C16", "id": "C16", "label": "C16. Le système permet de détecter certaines incohérences ou erreurs.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "C17", "id": "C17", "label": "C17. Les erreurs identifiées peuvent être corrigées selon une procédure définie.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "C18", "id": "C18", "label": "C18. L'identification unique contribue à réduire les risques de doublons.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "C19", "id": "C19", "label": "C19. La digitalisation améliore la fiabilité des données par rapport aux procédures traditionnelles.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "C20", "id": "C20", "label": "C20. Les données collectées peuvent être exploitées pour produire des informations statistiques utiles.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION D : OBSERVATIONS FACTUELLES", "questions": [{"code": "D21", "id": "D21_FREQ_DOUBLONS_EVITES", "label": "D21. À quelle fréquence avez-vous effectivement observé des enregistrements multiples/doublons détectés ou évités par le dispositif ?", "type": "Échelle linéaire (fréquence)", "kind": "single", "options": ["Jamais", "Rarement", "Parfois", "Souvent", "Très souvent"]}, {"code": "D22", "id": "D22_FREQ_ERREURS_CORRIGEES", "label": "D22. À quelle fréquence avez-vous observé des incohérences ou erreurs dans les données qui ont ensuite été corrigées ?", "type": "Échelle linéaire (fréquence)", "kind": "single", "options": ["Jamais", "Rarement", "Parfois", "Souvent", "Très souvent"]}, {"code": "D23", "id": "D23_FREQ_FRAUDE", "label": "D23. À quelle fréquence avez-vous rencontré des cas concrets de fraude ou de tentative de fraude liée à l'identité ?", "type": "Échelle linéaire (fréquence)", "kind": "single", "options": ["Jamais", "Rarement", "Parfois", "Souvent", "Très souvent"]}, {"code": "D24", "id": "D24_TYPE_PROBLEME", "label": "D24. Sans donner de données personnelles, quel type de problème d'identité avez-vous le plus fréquemment rencontré ?", "type": "Choix multiple", "kind": "single", "options": ["Doublon d'identité", "Erreur d'état civil", "Difficulté de vérification d'identité", "Identité non retrouvée", "Document non conforme", "Tentative de fraude liée à l'identité", "Autre"]}, {"code": "D25", "id": "D25_TEMPS_VS_ANTERIEUR", "label": "D25. Par rapport à une procédure antérieure comparable, le temps moyen de traitement est :", "type": "Choix multiple", "kind": "single", "options": ["Très inférieur", "Inférieur", "Comparable", "Supérieur", "Très supérieur", "Impossible à comparer"]}, {"code": "D26", "id": "D26_ECART_TEMPS", "label": "D26. Si une comparaison est possible, de quel ordre est la différence de temps ?", "type": "Choix multiple", "kind": "single", "options": ["Moins de 25 % plus court", "25–49 % plus court", "50 % ou plus plus court", "Comparable", "Plus long"]}]}, {"title": "SECTION E : UTILISATION DES DONNÉES ET ADMINISTRATION", "questions": [{"code": "E27", "id": "E27", "label": "E27. Des données d'identification plus fiables peuvent améliorer la connaissance de la population.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "E28", "id": "E28", "label": "E28. Des données fiables peuvent contribuer à améliorer les statistiques démographiques et administratives.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "E29", "id": "E29", "label": "E29. Des données plus fiables peuvent aider les administrations à mieux planifier leurs activités.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "E30", "id": "E30", "label": "E30. Ces données peuvent aider à mieux identifier les besoins de la population.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "E31", "id": "E31", "label": "E31. Des données fiables peuvent améliorer le ciblage des bénéficiaires des programmes publics.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "E32", "id": "E32", "label": "E32. Les données administratives peuvent compléter les recensements et autres sources statistiques.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "E33", "id": "E33", "label": "E33. Une meilleure interconnexion entre les administrations permettrait une meilleure utilisation des données.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION F : EFFICACITÉ ADMINISTRATIVE", "questions": [{"code": "F34", "id": "F34", "label": "F34. Le système peut réduire le temps nécessaire à certaines procédures administratives.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "F35", "id": "F35", "label": "F35. Le système peut contribuer à réduire certaines erreurs administratives.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "F36", "id": "F36", "label": "F36. Le système peut contribuer à limiter les doublons dans les fichiers administratifs.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "F37", "id": "F37", "label": "F37. Une identification plus fiable peut contribuer à réduire certaines fraudes liées à l'identité.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "F38", "id": "F38", "label": "F38. Le système peut améliorer l'organisation de certains services publics.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "F39", "id": "F39", "label": "F39. Une meilleure identification des bénéficiaires peut améliorer l'utilisation des ressources publiques.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION G : CONTRAINTES TECHNIQUES ET DU TERRAIN", "questions": [{"code": "G40", "id": "G40", "label": "G40. Mauvais état des routes et difficultés de transport.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G41", "id": "G41", "label": "G41. Éloignement des populations et des localités.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G42", "id": "G42", "label": "G42. Absence ou insuffisance d'électricité.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G43", "id": "G43", "label": "G43. Faiblesse ou absence de réseau téléphonique.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G44", "id": "G44", "label": "G44. Faiblesse ou absence de connexion Internet.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G45", "id": "G45", "label": "G45. Pannes ou dysfonctionnements des kits.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G46", "id": "G46", "label": "G46. Difficultés de recharge ou d'alimentation électrique.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G47", "id": "G47", "label": "G47. Difficultés de transmission ou de synchronisation des données.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G48", "id": "G48", "label": "G48. Insuffisance du nombre d'équipements.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "G49", "id": "G49", "label": "G49. Difficultés de maintenance et de réparation.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION H : FACTEURS SOCIAUX", "questions": [{"code": "H50", "id": "H50", "label": "H50. Le manque de confiance envers les institutions peut limiter la participation de la population.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "H51", "id": "H51", "label": "H51. La peur ou l'appréhension des bureaux administratifs peut décourager certaines personnes.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "H52", "id": "H52", "label": "H52. Les recommandations de la famille peuvent influencer la décision de participer.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "H53", "id": "H53", "label": "H53. Les responsables locaux et communautaires peuvent influencer la participation.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "H54", "id": "H54", "label": "H54. Les rumeurs et les fausses informations peuvent réduire la participation.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "H55", "id": "H55", "label": "H55. Le manque d'information claire constitue un obstacle important.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "H56", "id": "H56", "label": "H56. La crainte concernant l'utilisation des données personnelles peut limiter la participation.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION I : CAPACITÉS INSTITUTIONNELLES", "questions": [{"code": "I57", "id": "I57", "label": "I57. Les ressources humaines sont suffisantes pour assurer le bon fonctionnement des opérations.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "I58", "id": "I58", "label": "I58. Les opérateurs disposent d'une formation suffisante.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "I59", "id": "I59", "label": "I59. Les équipements disponibles sont suffisants par rapport aux besoins.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "I60", "id": "I60", "label": "I60. La coordination entre les responsables et les institutions concernées est satisfaisante.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "I61", "id": "I61", "label": "I61. Les problèmes techniques sont résolus dans des délais satisfaisants.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}, {"code": "I62", "id": "I62", "label": "I62. Les contraintes institutionnelles et organisationnelles limitent l'efficacité du dispositif.", "type": "Échelle linéaire (1-5)", "kind": "likert5"}]}, {"title": "SECTION J : SYNTHÈSE DES HYPOTHÈSES", "questions": [{"code": "J63", "id": "J63_H1_QUALITE_FIABILITE", "label": "J63. Dans quelle mesure l'enrôlement biométrique contribue-t-il à améliorer la qualité et la fiabilité des données utilisées par l'administration ?", "type": "Choix multiple", "kind": "single", "options": ["Très faible", "Faible", "Moyenne", "Élevée", "Très élevée"]}, {"code": "J64", "id": "J64_H2_PLANIFICATION", "label": "J64. Dans quelle mesure des données administratives plus fiables peuvent-elles améliorer la planification et la prise de décision publique ?", "type": "Choix multiple", "kind": "single", "options": ["Très faible", "Faible", "Moyenne", "Élevée", "Très élevée"]}, {"code": "J65", "id": "J65_H3_CONTRAINTES_EFFICACITE", "label": "J65. Dans quelle mesure les contraintes techniques, institutionnelles et sociales limitent-elles l'efficacité du dispositif ?", "type": "Choix multiple", "kind": "single", "options": ["Très faible", "Faible", "Moyenne", "Élevée", "Très élevée"]}]}, {"title": "SECTION K : QUESTIONS FERMÉES DE SYNTHÈSE", "questions": [{"code": "K66", "id": "K66_AVANTAGES", "label": "K66. Quels sont, selon vous, les principaux avantages du dispositif ?", "type": "Cases à cocher", "kind": "multi", "options": ["Meilleure identification", "Réduction des doublons", "Amélioration de la qualité des données", "Amélioration des statistiques", "Facilitation des démarches administratives", "Meilleur ciblage des bénéficiaires", "Autre"]}, {"code": "K67", "id": "K67_OBSTACLES", "label": "K67. Quels sont, selon vous, les principaux obstacles rencontrés ?", "type": "Cases à cocher", "kind": "multi", "options": ["Contraintes techniques", "Contraintes de transport / accessibilité", "Manque d'information", "Manque de personnel", "Formation insuffisante", "Contraintes institutionnelles", "Réticence ou méfiance de la population", "Autre"]}, {"code": "K68", "id": "K68_CHANGEMENT_PRINCIPAL", "label": "K68. Quel est le changement ou l'effet le plus important observé depuis le début de l'opération ?", "type": "Choix multiple", "kind": "single", "options": ["Amélioration de la qualité des données", "Réduction des doublons", "Amélioration du traitement administratif", "Meilleure connaissance de la population", "Amélioration des statistiques", "Meilleur ciblage des bénéficiaires", "Autre"]}, {"code": "K69", "id": "K69_AMELIORATIONS_PRIORITAIRES", "label": "K69. Quelles améliorations recommandez-vous en priorité ?", "type": "Cases à cocher", "kind": "multi", "options": ["Renforcer les équipements", "Améliorer la connexion et l'alimentation électrique", "Renforcer la formation", "Renforcer les ressources humaines", "Améliorer l'information de la population", "Améliorer la coordination institutionnelle", "Renforcer la protection des données", "Autre"]}, {"code": "K70", "id": "K70_CONDITIONS_UTILISATION", "label": "K70. Quelles conditions sont nécessaires pour que les données issues du dispositif soient réellement utilisées pour améliorer la planification et la prise de décision publique ?", "type": "Cases à cocher", "kind": "multi", "options": ["Qualité et fiabilité des données", "Mise à jour régulière des données", "Interopérabilité entre administrations", "Accès sécurisé aux données", "Capacités techniques suffisantes", "Formation des utilisateurs", "Coordination institutionnelle", "Cadre de protection des données", "Autre"]}]}]};
+
+/* ================== CONFIGURATION ================== */
+// Remplacez cette URL par celle de votre Web App Google Apps Script une fois déployée
+// (voir GUIDE_INSTALLATION.md). Tant qu'elle n'est pas renseignée, les réponses restent
+// en file d'attente locale et seront envoyées automatiquement dès qu'une URL valide sera configurée.
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9inXWoYZ65jqO1-USE5Md-7LmV80L8Ze0NCHJS7Vb9nKwSRyAt-Kz5yRXMWzhmR4O5A/exec";
+
+const CONSENT_IDS = { population: "Q1_CONSENTEMENT", operateurs: "CONSENT_ACTEURS" };
+const CONSENT_ACCEPT = "Oui, j'accepte de participer";
+const CONSENT_REFUSE = "Non, je refuse";
+const TYPE_LABELS = { population: "Population", operateurs: "Opérateurs et acteurs" };
+const QUEUE_KEY = "izaho_tokana_queue_v1";
+const DRAFT_PREFIX = "izaho_tokana_draft_v1_";
+
+const LIKERT_LABELS = {1:"Pas du tout d'accord",2:"Pas d'accord",3:"Ni d'accord ni pas d'accord",4:"D'accord",5:"Tout à fait d'accord"};
+
+let currentForm = null; // "population" | "operateurs"
+let consentGiven = false;
+
+const landing = document.getElementById('landing');
+const formArea = document.getElementById('formArea');
+const thanks = document.getElementById('thanks');
+const refusalScreen = document.getElementById('refusal');
+const syncBanner = document.getElementById('syncBanner');
+const surveyForm = document.getElementById('surveyForm');
+const progressFill = document.getElementById('progressFill');
+const progressLabel = document.getElementById('progressLabel');
+const submitBtn = document.getElementById('submitBtn');
+
+document.querySelectorAll('.choice-card').forEach(el=>{
+  el.addEventListener('click', ()=> startForm(el.dataset.target));
+});
+document.getElementById('backBtn').addEventListener('click', ()=>{
+  formArea.classList.add('hidden'); landing.classList.remove('hidden');
+});
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  thanks.classList.add('hidden'); landing.classList.remove('hidden');
+});
+document.getElementById('refusalRestartBtn').addEventListener('click', ()=>{
+  refusalScreen.classList.add('hidden'); landing.classList.remove('hidden');
+});
+submitBtn.addEventListener('click', onSubmit);
+
+function el(tag, attrs={}, children=[]){
+  const e = document.createElement(tag);
+  for(const k in attrs){
+    if(k==='class') e.className = attrs[k];
+    else if(k==='text') e.textContent = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.forEach(c=> e.appendChild(c));
+  return e;
+}
+
+function isVisible(node){
+  return !!(node.offsetParent !== null || node === document.body);
+}
+
+/* ================== DEMARRAGE / RENDU ================== */
+
+function startForm(which){
+  currentForm = which; consentGiven = false;
+  landing.classList.add('hidden'); thanks.classList.add('hidden'); refusalScreen.classList.add('hidden');
+  formArea.classList.remove('hidden');
+  submitBtn.classList.add('hidden');
+  renderForm(DATA[which]);
+  restoreDraft();
+  applyConditionalLogic();
+  updateProgress();
+  window.scrollTo(0,0);
+}
+
+function renderForm(sections){
+  surveyForm.innerHTML = '';
+  const consentSection = sections[0];
+  surveyForm.appendChild(el('div',{class:'section-title', text:consentSection.title}));
+  consentSection.questions.forEach(q=> surveyForm.appendChild(renderQuestion(q)));
+
+  const postWrap = el('div',{id:'postConsentWrap', class:'hidden'});
+  sections.slice(1).forEach(sec=>{
+    postWrap.appendChild(el('div',{class:'section-title', text:sec.title}));
+    sec.questions.forEach(q=> postWrap.appendChild(renderQuestion(q)));
+  });
+  surveyForm.appendChild(postWrap);
+}
+
+function renderQuestion(q){
+  const wrap = el('div',{class:'q', id:'wrap_'+q.id});
+  wrap.dataset.qid = q.id;
+  if(q.dependsOn){ wrap.dataset.dependsOn = q.dependsOn; wrap.dataset.showIf = JSON.stringify(q.showIf); wrap.classList.add('hidden'); }
+  const lbl = el('label',{class:'qlabel'});
+  lbl.textContent = q.label;
+  wrap.appendChild(lbl);
+
+  if(q.kind === 'likert5'){
+    const row = el('div',{class:'likert-row'});
+    for(let i=1;i<=5;i++){
+      const item = el('div',{class:'likert-item'});
+      const inp = el('input',{type:'radio', name:q.id, value:i});
+      inp.addEventListener('change', onAnyChange);
+      item.appendChild(inp);
+      item.appendChild(el('span',{text:i}));
+      row.appendChild(item);
+    }
+    wrap.appendChild(row);
+    const cap = el('div',{class:'likert-caption'});
+    cap.appendChild(el('span',{text:LIKERT_LABELS[1]}));
+    cap.appendChild(el('span',{text:LIKERT_LABELS[5]}));
+    wrap.appendChild(cap);
+  } else if(q.kind === 'single'){
+    const list = el('div',{class:'opt-list'});
+    q.options.forEach(opt=>{
+      const optEl = el('label',{class:'opt'});
+      const inp = el('input',{type:'radio', name:q.id, value:opt});
+      inp.addEventListener('change', onAnyChange);
+      optEl.appendChild(inp);
+      optEl.appendChild(document.createTextNode(opt));
+      list.appendChild(optEl);
+    });
+    wrap.appendChild(list);
+  } else if(q.kind === 'multi'){
+    const list = el('div',{class:'opt-list'});
+    q.options.forEach(opt=>{
+      const optEl = el('label',{class:'opt'});
+      const inp = el('input',{type:'checkbox', name:q.id, value:opt});
+      inp.addEventListener('change', onAnyChange);
+      optEl.appendChild(inp);
+      optEl.appendChild(document.createTextNode(opt));
+      list.appendChild(optEl);
+    });
+    wrap.appendChild(list);
+  }
+  return wrap;
+}
+
+/* ================== LOGIQUE CONDITIONNELLE + CONSENTEMENT ================== */
+
+function onAnyChange(e){
+  const changed = e.target;
+  clearFieldError(changed.closest('.q'));
+
+  const consentId = CONSENT_IDS[currentForm];
+  if(changed.name === consentId){
+    handleConsentChange(changed.value);
+  }
+  applyConditionalLogic();
+  saveDraft();
+  updateProgress();
+}
+
+function handleConsentChange(value){
+  const postWrap = document.getElementById('postConsentWrap');
+  if(value === CONSENT_ACCEPT){
+    consentGiven = true;
+    postWrap.classList.remove('hidden');
+    submitBtn.classList.remove('hidden');
+  } else if(value === CONSENT_REFUSE){
+    consentGiven = false;
+    postWrap.classList.add('hidden');
+    submitBtn.classList.add('hidden');
+    const reponses = {}; reponses[CONSENT_IDS[currentForm]] = value;
+    const payload = buildPayload(reponses, true);
+    clearDraft();
+    queueAndSend(payload);
+    formArea.classList.add('hidden');
+    refusalScreen.classList.remove('hidden');
+    window.scrollTo(0,0);
+  }
+}
+
+function applyConditionalLogic(){
+  document.querySelectorAll('#surveyForm .q[data-depends-on]').forEach(wrap=>{
+    const parentId = wrap.dataset.dependsOn;
+    const showIf = JSON.parse(wrap.dataset.showIf);
+    const parentInputs = surveyForm.querySelectorAll('input[name="'+parentId+'"]');
+    let parentVal = null;
+    parentInputs.forEach(i=>{ if(i.checked) parentVal = i.value; });
+    const shouldShow = showIf.includes(parentVal);
+    wrap.classList.toggle('hidden', !shouldShow);
+    if(!shouldShow){
+      wrap.querySelectorAll('input').forEach(i=> i.checked=false);
+      clearFieldError(wrap);
+    }
+  });
+}
+
+function updateProgress(){
+  const allQ = Array.from(surveyForm.querySelectorAll('.q')).filter(isVisible);
+  let answered = 0;
+  allQ.forEach(w=>{
+    const inputs = w.querySelectorAll('input');
+    let has=false;
+    inputs.forEach(i=>{ if(i.checked) has=true; });
+    if(has) answered++;
+  });
+  const total = allQ.length || 1;
+  const pct = Math.round((answered/total)*100);
+  progressFill.style.width = pct+'%';
+  progressLabel.textContent = answered+' / '+total+' questions répondues';
+}
+
+/* ================== VALIDATION / COLLECTE ================== */
+
+function clearFieldError(wrap){
+  if(!wrap) return;
+  wrap.classList.remove('q-error');
+  const msg = wrap.querySelector('.q-error-msg');
+  if(msg) msg.remove();
+}
+
+function validateRequired(){
+  const visibleQs = Array.from(surveyForm.querySelectorAll('.q')).filter(isVisible);
+  let firstInvalid = null;
+  visibleQs.forEach(wrap=>{
+    const inputs = wrap.querySelectorAll('input');
+    let has = false;
+    inputs.forEach(i=>{ if(i.checked) has = true; });
+    if(!has){
+      wrap.classList.add('q-error');
+      if(!wrap.querySelector('.q-error-msg')){
+        wrap.appendChild(el('div',{class:'q-error-msg', text:'Réponse requise.'}));
+      }
+      if(!firstInvalid) firstInvalid = wrap;
+    } else {
+      clearFieldError(wrap);
+    }
+  });
+  if(firstInvalid){
+    firstInvalid.scrollIntoView({behavior:'smooth', block:'center'});
+    return false;
+  }
+  return true;
+}
+
+function collectAnswers(){
+  const reponses = {};
+  const visibleWraps = Array.from(surveyForm.querySelectorAll('.q')).filter(isVisible);
+  visibleWraps.forEach(w=>{
+    const qid = w.dataset.qid;
+    const checks = w.querySelectorAll('input:checked');
+    if(checks.length===0) return;
+    if(checks[0].type==='checkbox'){
+      reponses[qid] = Array.from(checks).map(c=>c.value).join('; ');
+    } else {
+      reponses[qid] = checks[0].value;
+    }
+  });
+  return reponses;
+}
+
+/* ================== BROUILLON LOCAL (anti-perte pendant la saisie) ================== */
+
+function saveDraft(){
+  try{
+    const reponses = {};
+    surveyForm.querySelectorAll('input:checked').forEach(i=>{
+      if(i.type==='checkbox'){
+        reponses[i.name] = reponses[i.name] ? reponses[i.name]+'; '+i.value : i.value;
+      } else {
+        reponses[i.name] = i.value;
+      }
+    });
+    localStorage.setItem(DRAFT_PREFIX+currentForm, JSON.stringify(reponses));
+  }catch(err){}
+}
+
+function restoreDraft(){
+  try{
+    const raw = localStorage.getItem(DRAFT_PREFIX+currentForm);
+    if(!raw) return;
+    const reponses = JSON.parse(raw);
+    Object.keys(reponses).forEach(name=>{
+      const values = String(reponses[name]).split('; ');
+      values.forEach(v=>{
+        const inp = surveyForm.querySelector('input[name="'+CSS.escape(name)+'"][value="'+CSS.escape(v)+'"]');
+        if(inp) inp.checked = true;
+      });
+    });
+    const consentVal = reponses[CONSENT_IDS[currentForm]];
+    if(consentVal === CONSENT_ACCEPT){
+      handleConsentChange(CONSENT_ACCEPT);
+    }
+  }catch(err){}
+}
+
+function clearDraft(){
+  try{ localStorage.removeItem(DRAFT_PREFIX+currentForm); }catch(err){}
+}
+
+/* ================== ENVOI / FILE D'ATTENTE HORS-LIGNE ================== */
+
+function uuid(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c=>{
+    const r = Math.random()*16|0, v = c==='x'? r : (r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+function buildPayload(reponses, isRefusal){
+  return {
+    submissionId: uuid(),
+    type: TYPE_LABELS[currentForm],
+    horodatageClient: new Date().toISOString(),
+    consentement: reponses[CONSENT_IDS[currentForm]] || '',
+    refus: !!isRefusal,
+    reponses: reponses
+  };
+}
+
+function loadQueue(){
+  try{ return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); }catch(err){ return []; }
+}
+function saveQueue(q){
+  try{ localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }catch(err){}
+}
+
+function updateSyncBanner(){
+  const n = loadQueue().length;
+  if(n>0){
+    syncBanner.textContent = n+' réponse(s) en attente d\u2019envoi \u2014 nouvelle tentative automatique dès que la connexion est disponible.';
+    syncBanner.classList.remove('hidden');
+  } else {
+    syncBanner.classList.add('hidden');
+  }
+}
+
+function queueAndSend(payload){
+  const q = loadQueue();
+  q.push(payload);
+  saveQueue(q);
+  updateSyncBanner();
+  flushQueue();
+}
+
+async function sendToServer(payload){
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('URL_A_REMPLACER') === 0) return false;
+  try{
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'}, // evite le preflight CORS
+      body: JSON.stringify(payload)
+    });
+    return res.ok;
+  }catch(err){
+    return false;
+  }
+}
+
+let flushing = false;
+async function flushQueue(){
+  if(flushing) return;
+  if(!navigator.onLine) return;
+  const q = loadQueue();
+  if(q.length===0) return;
+  flushing = true;
+  const remaining = [];
+  for(const item of q){
+    const ok = await sendToServer(item);
+    if(!ok) remaining.push(item);
+  }
+  saveQueue(remaining);
+  updateSyncBanner();
+  flushing = false;
+}
+
+window.addEventListener('online', flushQueue);
+window.addEventListener('load', ()=>{ updateSyncBanner(); flushQueue(); });
+setInterval(flushQueue, 30000);
+
+/* ================== SOUMISSION FINALE ================== */
+
+function onSubmit(e){
+  e.preventDefault();
+  if(!consentGiven) return;
+  if(!validateRequired()) return;
+
+  const reponses = collectAnswers();
+  const payload = buildPayload(reponses, false);
+
+  formArea.classList.add('hidden');
+  thanks.classList.remove('hidden');
+  document.getElementById('thanksMsg').textContent =
+    'Merci pour votre participation. Votre réponse a bien été enregistrée.';
+  window.scrollTo(0,0);
+
+  clearDraft();
+  queueAndSend(payload);
+}
+</script>
+</body>
+</html>
